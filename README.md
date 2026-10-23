@@ -31,6 +31,23 @@
 $ npm install
 ```
 
+## Arcjet protection
+
+`ArcjetModule.forRoot()` configures Arcjet globally in `src/app.module.ts`.
+Shield runs in live mode on every HTTP route, and a per-IP token bucket allows
+a burst of 100 requests while refilling 100 tokens per minute. The global
+guard applies these rules to each HTTP request. Rate-limited requests receive
+HTTP 429; other Arcjet denials receive HTTP 403.
+
+Set `ARCJET_KEY` in the local `.env` file before starting the app. The `.env`
+file is gitignored; configure the same variable in the deployment environment.
+The key is required at application startup.
+
+The current `@arcjet/nest` release declares Nest 10/11 peer support, while this
+project targets Nest 12. `.npmrc` enables legacy peer resolution to install the
+adapter with Nest 12; this combination is outside the adapter's declared peer
+range.
+
 ## Compile and run the project
 
 ```bash
