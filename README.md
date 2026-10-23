@@ -54,18 +54,29 @@ Prisma ORM 7 uses the PostgreSQL driver adapter. The generated client is written
 to `src/generated/prisma` and exposed application-wide by the injected
 `PrismaService` in `src/lib/database`.
 
-Set `DATABASE_URL` in the local `.env` file. It is ignored by git. Generate the
-client after installing dependencies:
+Set `DATABASE_URL` in the local `.env` file. It is ignored by git. The auth
+tables and `UserRole` enum are defined in `prisma/schema.prisma`. Generate the
+client after changing the schema:
 
 ```bash
-npm run prisma:generate
+npm run db:generate
 ```
 
-The database is currently blank and the Prisma schema has no models, so no
-migration has been created or applied. When models are added, configure a
-direct Prisma Postgres URL as `DIRECT_URL` before running Prisma CLI migrations;
-the config prefers that URL, while the app's runtime adapter uses the pooled
-`DATABASE_URL`.
+Prisma CLI migrations prefer the direct `DIRECT_URL`; the app's runtime adapter
+uses the pooled `DATABASE_URL`.
+
+## Authentication
+
+Better Auth is integrated through `@thallesp/nestjs-better-auth` and uses the
+injected `PrismaService` for PostgreSQL persistence. Email/password
+authentication is enabled. The adapter's global guard protects routes by
+default; mark intentionally public routes with `@AllowAnonymous()`.
+
+Set `BETTER_AUTH_URL` to the server's base URL and `BETTER_AUTH_SECRET` to a
+secret of at least 32 characters in the local `.env` file and deployment
+environment. The user role is restricted to `PARTICIPANT` or `ADMIN`, defaults
+to `PARTICIPANT`, and cannot be supplied during sign-up. Promote users to
+`ADMIN` only through a trusted direct database update.
 
 ## Compile and run the project
 

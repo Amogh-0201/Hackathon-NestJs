@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ArcjetModule, shield, tokenBucket } from '@arcjet/nest';
+import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { ArcjetGuard } from './common/guards/arcjet.guard';
 import { PrismaModule } from './lib/database/prisma.module';
+import { PrismaService } from './lib/database/prisma.service';
+import { createAuth } from './lib/auth/auth';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import 'dotenv/config';
@@ -20,6 +23,12 @@ function getArcjetKey(): string {
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    AuthModule.forRootAsync({
+      inject: [PrismaService, ConfigService],
+      useFactory: (prisma: PrismaService, configService: ConfigService) => ({
+        auth: createAuth(prisma, configService),
+      }),
+    }),
     ArcjetModule.forRoot({
       isGlobal: true,
       key: getArcjetKey(),
@@ -27,9 +36,9 @@ function getArcjetKey(): string {
         shield({ mode: 'LIVE' }),
         tokenBucket({
           mode: 'LIVE',
-          refillRate: 10,
+          refillRate: 100,
           interval: '1m',
-          capacity: 10,
+          capacity: 100,
         }),
       ],
     }),
