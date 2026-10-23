@@ -1,42 +1,42 @@
-# Memory — Arcjet NestJS Setup
+# Memory — Arcjet, Prisma, and Database Console Check
 
-Last updated: 2026-10-23 13:30 +05:30
+Last updated: 2026-10-23 15:44 +05:30
 
 ## What was built
 
-- Created Arcjet site `jsm-hackathon` in the Personal team (site ID `site_01m5kvccjdeg4tp2c5br1m04ps`).
-- Retrieved the site's SDK key and stored it in the local `.env`. The file is gitignored. Never persist or reveal the key itself.
-- Added `@nestjs/config` for dotenv loading and integrated Arcjet directly in `src/app.module.ts` with `ArcjetModule.forRoot({ isGlobal: true, key, rules })`.
-- Configured Shield LIVE and a per-IP token bucket with capacity 100 and refill rate 100/minute.
-- Registered the application-wide `ArcjetGuard` using `APP_GUARD`; it injects the Arcjet token from `@arcjet/nest`, checks HTTP requests, returns 429 for rate limit denials and 403 for other denials.
-- Added `.npmrc` with `legacy-peer-deps=true` and documented the compatibility caveat in README.md.
+- Arcjet site `jsm-hackathon` is configured; its key is stored only in ignored `.env`.
+- Arcjet is configured in `src/app.module.ts` with `ArcjetModule.forRoot`, LIVE Shield, and a global IP token bucket of 10 tokens/minute. `src/common/guards/arcjet.guard.ts` consumes one token per HTTP request, returns 429 for limit denials, 403 for other denials, and 503 on SDK errors.
+- Prisma ORM 7.10.1, PostgreSQL adapter/client, `pg`, `tsx`, and `dotenv` are installed. Client generated under `src/generated/prisma`.
+- Blank `prisma/schema.prisma`, `prisma.config.ts` (prefers `DIRECT_URL` for CLI), `npm run prisma:generate`, and global DI `PrismaModule`/`PrismaService` are in place.
 
 ## Decisions made
 
-- User explicitly chose to target the globally installed Nest CLI version, 12.0.8, and keep Nest 12.
-- User explicitly approved the official `@arcjet/nest` adapter despite the current package's declared Nest 10/11 peer range. Use legacy peer resolution for reproducible installs; this package/framework combination remains outside the declared support range.
-- Keep the 100-per-minute global per-IP token bucket unless product traffic requirements call for a change.
+- Keep Prisma schema empty; user confirmed no initial migration is needed.
+- Use pooled `DATABASE_URL` for runtime. Use direct `DIRECT_URL` only for future Prisma CLI migrations/introspection as needed.
+- Nest 12 is the project target; Arcjet adapter Nest peer-range bypass is user-approved.
 
 ## Problems solved
 
-- Replaced the original custom `@arcjet/node` module/service configuration with the official Nest adapter and `ArcjetModule.forRoot` at the user's request.
-- A clean `npm ci --dry-run` failed due to the Nest 12 vs Arcjet Nest 10/11 peer conflict. Added `.npmrc` per user's approval; a full clean `npm ci` then succeeded.
-- Nest does not export `TooManyRequestsException`; guard uses `HttpException` and `HttpStatus.TOO_MANY_REQUESTS`.
-- Global Nest CLI was confirmed as 12.0.8; project package manifests are Nest 12. Repository `AGENTS.md` still says Nest 11.
+- Arcjet rate limiting required `requested: 1` on each guard request; missing it caused errors that were treated as allows. The guard now sets request cost and fails closed on Arcjet SDK errors.
+- Port 3000 conflict was a stale Nest process from a prior smoke test; its exact PID was stopped and the port freed.
 
 ## Current state
 
-- Arcjet key exists exactly once and non-empty in ignored `.env`; value intentionally excluded from memory and chat.
-- `@arcjet/nest@1.14.1` is installed with Nest common 12.2.0 via the explicitly approved peer bypass.
-- `npm ci`, `npm run build`, `npm run lint`, and `npm test -- --runInBand` pass.
-- Local runtime smoke test passed with HTTP 200 through the global guard.
-- npm install/audit reports five vulnerabilities (2 low, 1 moderate, 2 high); no automatic fixes were applied.
+- Prisma schema/client generation, validation, Nest build, lint, and tests pass.
+- Runtime PrismaService connected using the app `.env` URL and successfully ran read-only `SELECT 1`.
+- Latest Prisma MCP project listing returned project `jsm-hackathon`, ID `proj_ogkua1auiwa8tr9htu8eekzl`; database listing returned `Primary Database`, ID `db_lk9v75i1298geqv45k474vmu`, region Singapore, status ready.
+- Those project and database IDs match the IDs visible in the user's Prisma Console screenshot URL. The screenshot database is therefore the same project/database configured in this repo.
+- Prisma MCP lists connection-string records for that database. MCP introspection returned “Prisma Postgres schema was not found” (likely because no Prisma migration schema exists yet); a Prisma MCP SQL query requested approval and was not run.
+- A fresh in-app read-only Prisma query succeeded against the local DATABASE_URL; this confirms app credentials/runtime DB connectivity. The Console’s “Waiting for your first connection” indicator may be stale/onboarding UI; refresh the console or close/reopen the connection panel and check that database selection.
+- `.env` is ignored and contains credentials; never echo or persist values. The database credential was pasted in chat earlier and should be rotated.
+- `.mcp.json` contains a pre-existing user change; don't overwrite it inadvertently.
 
 ## Next session starts with
 
-Continue feature work with the global Arcjet config in `src/app.module.ts`; preserve `.env` secrecy and `.npmrc` peer bypass. Revisit the Nest 12 peer-support caveat if Arcjet publishes a compatible adapter or project framework version changes.
+If the Prisma Console still says “Waiting for your first connection,” refresh the console page after the successful app query, confirm the selected database is `Primary Database` in `jsm-hackathon`, and run another read-only query through the app's injected PrismaService. Do not run migrations while schema is blank.
 
 ## Open questions
 
-- Should the global rate limit be tuned to expected traffic?
-- Should repository `AGENTS.md` be updated from Nest 11 to Nest 12?
+- Does refreshing/reopening the Prisma Console connection panel clear its onboarding status?
+- Should `app.enableShutdownHooks()` be added in `src/main.ts` for graceful Prisma disconnection?
+- What models should eventually be added?

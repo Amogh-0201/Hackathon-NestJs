@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ArcjetModule, shield, tokenBucket } from '@arcjet/nest';
 import { ArcjetGuard } from './common/guards/arcjet.guard';
+import { PrismaModule } from './lib/database/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import 'dotenv/config';
@@ -18,6 +19,7 @@ function getArcjetKey(): string {
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
     ArcjetModule.forRoot({
       isGlobal: true,
       key: getArcjetKey(),

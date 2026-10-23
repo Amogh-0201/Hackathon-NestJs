@@ -48,6 +48,25 @@ project targets Nest 12. `.npmrc` enables legacy peer resolution to install the
 adapter with Nest 12; this combination is outside the adapter's declared peer
 range.
 
+## Prisma
+
+Prisma ORM 7 uses the PostgreSQL driver adapter. The generated client is written
+to `src/generated/prisma` and exposed application-wide by the injected
+`PrismaService` in `src/lib/database`.
+
+Set `DATABASE_URL` in the local `.env` file. It is ignored by git. Generate the
+client after installing dependencies:
+
+```bash
+npm run prisma:generate
+```
+
+The database is currently blank and the Prisma schema has no models, so no
+migration has been created or applied. When models are added, configure a
+direct Prisma Postgres URL as `DIRECT_URL` before running Prisma CLI migrations;
+the config prefers that URL, while the app's runtime adapter uses the pooled
+`DATABASE_URL`.
+
 ## Compile and run the project
 
 ```bash
