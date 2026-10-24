@@ -11,6 +11,7 @@ import { createAuth } from './lib/auth/auth';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './module/user/user.module';
+import { HackathonModule } from './module/hackathon/hackathon.module';
 import 'dotenv/config';
 
 function getArcjetKey(): string {
@@ -45,6 +46,7 @@ function getArcjetKey(): string {
         }),
       ],
     }),
+    HackathonModule,
   ],
   controllers: [AppController],
   providers: [

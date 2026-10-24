@@ -1,32 +1,31 @@
-# Memory — Global Response Interceptor
+# Memory — Hackathon Participant Join
 
-Last updated: 2026-10-24 13:35 +05:30
+Last updated: 2026-10-24 14:40 +05:30
 
 ## What was built
 
-- Added `ResponseMessage` metadata decorator and a global response interceptor in `src/common/decorators/response-message.decorator.ts` and `src/common/interceptors/response.interceptor.ts`.
-- Responses handled by Nest controllers are wrapped as `{ statusCode, message, data }`; message defaults to `success`.
-- Registered the interceptor in `AppModule` and installed its DI-managed instance globally in `src/main.ts`.
-- Added focused tests for the default and custom message behavior.
+- Added `POST /hackathon/:id/join` in the Hackathon controller, restricted to the `PARTICIPANT` role and using the authenticated session user ID.
+- Added service checks that the hackathon exists, is active, and has not ended before creating a participant record.
+- Duplicate joins return `BadRequestException`; the unique constraint is also handled for concurrent duplicate requests.
+- The endpoint returns the created participant record and has a success response message.
 
 ## Decisions made
 
-- Handler-level message metadata takes precedence over controller-level metadata.
-- The interceptor is registered as an `AppModule` provider and retrieved through Nest DI when wiring it globally.
+- The end-time check uses the Prisma `endDate` field corresponding to the schema; a hackathon with `endDate <= now` is considered ended.
+- Database unique-constraint errors (`P2002`) are mapped to the duplicate-join bad request response.
 
 ## Problems solved
 
-- No existing shared response interceptor or message decorator was present.
+- None.
 
 ## Current state
 
-- Build and lint pass.
-- Both focused interceptor tests pass.
-- Changes are uncommitted.
+- `npm run build` and `npm run lint` pass.
+- Hackathon schema, CRUD, and participant join endpoint are implemented.
 
 ## Next session starts with
 
-- Continue from the interceptor feature; no follow-up is required unless response-envelope behavior needs additional endpoint-specific coverage.
+- Continue with any remaining Hackathon requirements.
 
 ## Open questions
 

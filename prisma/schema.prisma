@@ -18,16 +18,43 @@ enum UserRole {
 }
 
 model User {
-  id            String    @id
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  image         String?
-  role          UserRole  @default(PARTICIPANT)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  id                    String                 @id
+  name                  String
+  email                 String                 @unique
+  emailVerified         Boolean                @default(false)
+  image                 String?
+  role                  UserRole               @default(PARTICIPANT)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  sessions              Session[]
+  accounts              Account[]
+  authoredHackathons    Hackathon[]            @relation("HackathonAuthor")
+  hackathonParticipants HackathonParticipant[]
+}
+
+model Hackathon {
+  id           String                 @id
+  name         String
+  description  String?
+  startDate    DateTime
+  endDate      DateTime
+  isActive     Boolean                @default(false)
+  authorId     String
+  author       User                   @relation("HackathonAuthor", fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  participants HackathonParticipant[]
+
+  @@index([authorId])
+}
+
+model HackathonParticipant {
+  id          String    @id
+  hackathonId String
+  userId      String
+  hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([hackathonId, userId])
+  @@index([userId])
 }
 
 model Session {
