@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ArcjetModule, shield, tokenBucket } from '@arcjet/nest';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { ArcjetGuard } from './common/guards/arcjet.guard';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { PrismaModule } from './lib/database/prisma.module';
 import { PrismaService } from './lib/database/prisma.service';
 import { createAuth } from './lib/auth/auth';
@@ -46,6 +47,10 @@ function getArcjetKey(): string {
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, { provide: APP_GUARD, useClass: ArcjetGuard }],
+  providers: [
+    AppService,
+    ResponseInterceptor,
+    { provide: APP_GUARD, useClass: ArcjetGuard },
+  ],
 })
 export class AppModule {}
