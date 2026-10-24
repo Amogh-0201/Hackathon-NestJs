@@ -78,6 +78,18 @@ environment. The user role is restricted to `PARTICIPANT` or `ADMIN`, defaults
 to `PARTICIPANT`, and cannot be supplied during sign-up. Promote users to
 `ADMIN` only through a trusted direct database update.
 
+Better Auth's CSRF-origin check is disabled so API clients such as Postman can
+make auth requests without an `Origin` header. Authentication and role checks
+remain enabled. Because this removes CSRF protection for cookie-authenticated
+requests, do not use browser cookie sessions from an untrusted web origin with
+this setting.
+
+### User endpoints
+
+All user endpoints require an authenticated Better Auth session. `GET /user/all`
+also requires the `ADMIN` role. `GET /user/:id` returns the matching user and
+responds with HTTP 404 when the ID does not exist.
+
 ## Compile and run the project
 
 ```bash

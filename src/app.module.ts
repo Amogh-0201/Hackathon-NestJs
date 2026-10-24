@@ -9,6 +9,7 @@ import { PrismaService } from './lib/database/prisma.service';
 import { createAuth } from './lib/auth/auth';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { UserModule } from './module/user/user.module';
 import 'dotenv/config';
 
 function getArcjetKey(): string {
@@ -23,6 +24,7 @@ function getArcjetKey(): string {
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    UserModule,
     AuthModule.forRootAsync({
       inject: [PrismaService, ConfigService],
       useFactory: (prisma: PrismaService, configService: ConfigService) => ({

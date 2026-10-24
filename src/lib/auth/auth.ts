@@ -18,6 +18,9 @@ export function createAuth(
     database: prismaAdapter(prisma, {
       provider: 'postgresql',
     }),
+    advanced: {
+      disableCSRFCheck: true,
+    },
     emailAndPassword: {
       enabled: true,
     },
